@@ -1,0 +1,207 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<title>CheckRg - encontre o RG apartir do CPF.</title>
+
+	<style type="text/css">
+	body {
+		margin:0;
+		padding:0;
+		background-color:#FFF;
+	}
+	.a {
+		font-family:Verdana, Geneva, sans-serif;
+		font-size:13px;
+	}
+	#Content {
+		width:600px;
+		height:auto;
+		overflow:hidden;
+		margin-left:auto;
+		margin-right:auto;
+	}
+	.form {
+	    height: auto;
+	    margin-top: 10px;
+	    overflow: hidden;
+	    width: 400px;
+	}
+	.form .incpf {
+		border:1px solid #CCC;
+		border-radius:3px;
+		width:280px;
+		height:23px;
+		text-align:center;
+	}
+	.form .bnt {
+		margin-top:15px;
+		border-radius:5px;
+		display: inline-block;
+		text-decoration: none;
+		color: #fff;
+		font-weight: bold;
+		background-color: #538fbe;
+		padding: 6px 30px;
+		font-size: 16px;
+		border: 1px solid #2d6898;
+		background-image: linear-gradient(bottom, rgb(73,132,180) 0%, rgb(97,155,203) 100%);
+		background-image: -o-linear-gradient(bottom, rgb(73,132,180) 0%, rgb(97,155,203) 100%);
+		background-image: -moz-linear-gradient(bottom, rgb(73,132,180) 0%, rgb(97,155,203) 100%);
+		background-image: -webkit-linear-gradient(bottom, rgb(73,132,180) 0%, rgb(97,155,203) 100%);
+		background-image: -ms-linear-gradient(bottom, rgb(73,132,180) 0%, rgb(97,155,203) 100%);
+		background-image: -webkit-gradient(  linear,  left bottom,  left top,  color-stop(0, rgb(73,132,180)),  color-stop(1, rgb(97,155,203))  );
+		cursor:pointer;
+	}
+	.form img{
+		border: 1px solid #cecece;
+    margin: 3% 0 3% 2%;
+    overflow: hidden;
+	}
+</style>
+
+<script type="text/javascript">
+
+function BuscaRg() {
+	$("#frmBuscaRg").html(`<br><br><center><h2>Aguarde, carregando ....</h2></center><br><br>`);
+	loadBuscaRg();
+}
+
+function consultaBuscaRg(ref) {
+    var token = getCookie('token');
+
+	ref.value = 'Aguarde...';
+	ref.disabled = true;
+	var doc    = $("#frmBuscaRg #cpf").val();
+	var rescap = $("#frmBuscaRg #captcha").val();
+	var auth1  = $("#frmBuscaRg #auth1").val();
+	var auth2  = $("#frmBuscaRg #auth2").val();
+
+	var data = {
+		doc: doc,
+		captcha: rescap,
+		auth1: auth1,
+		auth2: auth2
+	};
+
+    $.ajax({
+        method : "POST",
+        url : 'Servico/BuscaRg',
+        data: data,
+		timeout: 25000,
+        headers: {"Authorization": "Bearer " + token}		
+    })
+    .done(function(res) {
+    	  var res = JSON.parse(res);
+    	if(res.error) {
+    		alert(res.msg);
+    	} else {
+
+    		$("#frmBuscaRg").html("");
+    		if(res['dados']) {
+    			var result = `
+                <table width="auto" border="0" cellpadding="1" cellspacing="2" style="font-family:Verdana, Geneva, sans-serif; font-size:13px; color:#333;">
+                <tr>
+                <td width="auto" align="left">Nome:&nbsp;</td>
+                <td width="auto" align="left"><strong>${res.dados.nome}</strong></td>
+                </tr>
+                <tr>
+                <td width="auto" align="left">Cpf:&nbsp;</td>
+                <td width="auto" align="left"><strong>${res.dados.cpf}</strong></td>
+                </tr>
+                <tr>
+                <td width="auto" align="left">Rg:&nbsp;</td>
+                <td width="auto" align="left"><strong>${res.dados.rg}</strong>&nbsp;-&nbsp;UF:&nbsp;<strong>${res.dados.ufrg}</strong>&nbsp;-&nbsp;Orgao experidor: <strong>${res.dados.orgaorg}</strong></td>
+                </tr>
+                <tr>
+                <td width="auto" align="left">Sexo:&nbsp;</td>
+                <td width="auto" align="left"><strong>${res.dados.sexo}</strong></td>
+                </tr>
+                <tr>
+                <td width="auto" align="left">Endereco:&nbsp;</td>
+                <td width="auto" align="left"><strong>${res.dados.endereco.rua}</strong></td>
+                </tr>
+                <tr>
+                <td width="auto" align="left">Bairro:&nbsp;</td>
+                <td width="auto" align="left"><strong>${res.dados.endereco.bairro}</strong></td>
+                </tr>
+                <tr>
+                <td width="auto" align="left">Cep:&nbsp;</td>
+                <td width="auto" align="left"><strong>${res.dados.endereco.cep}</strong></td>
+                </tr>
+                <tr>
+                <td width="auto" align="left">Municipio:&nbsp;</td>
+                <td width="auto" align="left"><strong>${res.dados.endereco.municipio}</strong>&nbsp;-&nbsp;UF:&nbsp;<strong>${res.dados.endereco.uf}</strong></td>
+                </tr>
+                <tr>
+                <td colspan="2" align="left"><strong>Carteira de trabalho.</strong></td>
+                </tr>
+                <tr>
+                <td width="auto" align="left">Numero:&nbsp;</td>
+                <td width="auto" align="left"><strong>${res.dados.carteiratrab.carteira}</strong>&nbsp;-&nbsp;N de Serie:&nbsp;<strong>${res.dados.carteiratrab.nserie}</strong>&nbsp;-&nbsp;UF:&nbsp;<strong>${res.dados.carteiratrab.uf}</strong></td>
+                </tr>
+                <tr>
+                <td colspan="2" align="center"><a href="javascript:void(0)" onclick="BuscaRg(this);">Nova consulta</a></td>
+                </tr>
+                </table>`;
+
+				$("#frmBuscaRg").html(result);
+    		} else {
+    			console.log(res);
+				//loadBuscaRg();
+    		}
+    	}
+    	ref.value = 'Buscar';
+		ref.disabled = false;
+
+    })
+    .fail(function(res) {
+    	alert('Ocorreu um erro, tente novamente em breve...');
+		ref.value = 'Buscar';
+		ref.disabled = false;
+
+    });
+
+}
+
+function loadBuscaRg(){
+    var token = getCookie('token');
+	
+    $.ajax({
+        method : "GET",
+        url : "Servico/BuscaRg/load",
+        timeout: 25000,
+        headers: {"Authorization": "Bearer " + token}                
+    })
+    .done(function(res) {
+    	if(res.body) {
+    		$("#frmBuscaRg").html(res.body);
+    	}
+    })
+    .fail(function() {
+    	alert('Ocorreu um erro, tente novamente em breve!!!');
+    });
+}
+loadBuscaRg();
+</script>
+	</head>
+	<body>
+	<div id="Content"> <br />
+	<br />
+	<br />
+	<br />
+	<br />
+	<center>
+	<img src=" data:image/png;base64,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" title="CheckRg" align="CheckRg" width="210" height="69" />
+	<div class="form" id="frmBuscaRg">
+	<form action="" method="POST">
+	<br/>
+	<center><h2>Aguarde, carregando ....</h2></center>
+	<br />
+	</form>
+	</div>
+	</center>
+	</div>
+	<br><br><br><br><br><br>
+	</body>
+	</html>
