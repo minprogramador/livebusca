@@ -8,6 +8,7 @@ use App\Modulos;
 use App\Util;
 use App\Servico;
 use App\LogModulos;
+use App\Usuario;
 
 class BuscaRgController extends Controller
 {
@@ -25,33 +26,107 @@ class BuscaRgController extends Controller
 //        return $cookie;
     }
 
-    public function load(Request $request) {
-        $idUser  = Util::xss($request->user()->id_usuario);
+    public function verifLimPre($idUser, $Usuario, $modulo) {
+        $ver     = Modulos::where('nome', $modulo)
+                ->first();
 
-        $modulo = 'BuscaRg';
-        $ver = Modulos::where('nome', $modulo)
-            ->first();
-
-        $servico = 'BuscaRg';
+        $servico = $modulo;
         $Servico = Servico::where('id_usuario', $idUser)
             ->where('servico', $servico)
             ->where('status', 1)
             ->first();
 
-        if($Servico->usado >= $Servico->limite) {
-            $result = [
+        $Servico = json_decode($Servico, true);
+        
+        $prePago = true;
+            //coleta info user.
+
+            // pre pago!
+        $valorConsulta     = $Servico['valor'];
+        $valorConsultaLimp = floatval(str_replace(",",".",$valorConsulta));
+
+        $saldoUsuario = $Usuario['valor'];
+        $saldoUsuarioLimp = floatval(str_replace(",",".",$saldoUsuario));
+
+        if($valorConsultaLimp > $saldoUsuarioLimp) {
+            return true;
+        }else{
+            return false;
+        }
+
+    }
+
+    public function verifLimPontos($idUser, $Usuario, $modulo) {
+
+        $ver     = Modulos::where('nome', $modulo)
+                ->first();
+
+        $servico = $modulo;
+        $Servico = Servico::where('id_usuario', $idUser)
+            ->where('servico', $servico)
+            ->where('status', 1)
+            ->first();
+
+        $Servico = json_decode($Servico, true);
+        $prePago = false;
+
+        if($Servico['usado'] >= $Servico['limite']) {
+            return true;
+        }else{
+            return false;
+        }
+    }
+
+
+    public function load(Request $request) {
+
+
+        $idUser  = Util::xss($request->user()->id_usuario);
+
+        $modulo  = 'BuscaRg';
+        $ver     = Modulos::where('nome', $modulo)
+                ->first();
+
+        $Usuario = Usuario::where('id', $idUser)->first();
+        $Usuario = json_decode($Usuario, true);
+        if($Usuario['tipo'] == 2){
+            //pre pago
+            if($this->verifLimPre($idUser, $Usuario, $modulo)) {
+                            $result = [
                 "servico" => $ver['nome'],
                 "sobre"   => $ver['sobre'],
-                "body"    => "<br/> Seu limite acabou, para adquirir mais entre em contato<br/><br/>",
+                "body"    => "<br/> Saldo insuficiente, realize uma recarga para continuar usando.<br/><br/>",
                 "resultado" => "dados",
                 "status"  => 2
             ];
 
-            return response($result, 200);
+            return response($result, 200);   
+            }
+            $prePago = true;
+        } else {
+
+            //pontos
+            if($this->verifLimPontos($idUser, $Usuario, $modulo)){
+                if($this->verifLimPre($idUser, $Usuario, $modulo)) {
+                                $result = [
+                    "servico" => $ver['nome'],
+                    "sobre"   => $ver['sobre'],
+                    "body"    => "<br/> Saldo insuficiente, realize uma recarga para continuar usando.<br/><br/>",
+                    "resultado" => "dados",
+                    "status"  => 2
+                ];
+
+                return response($result, 200);   
+                }
+                $prePago = true;
+            }else{
+                $prePago = false;
+            }
         }
 
 
-        $url = 'http://upbusca.com/api/rgx.php?captcha=true';
+
+        $url = 'http://191.101.18.200/checkRg/api.php?captcha=true';
         $res = Util::curl($url, null, null, false);
 
         if(!stristr($res, 'captcha')) {
@@ -107,26 +182,52 @@ class BuscaRgController extends Controller
     }
 
     public function main(Request $request) {
-        $modulo = 'BuscaRg';
-        $ver = Modulos::where('nome', $modulo)
-            ->first();
 
-        $servico = 'BuscaRg';
-        $Servico = Servico::where('servico', $servico)
-            ->where('status', 1)
-            ->first();
+        $idUser  = Util::xss($request->user()->id_usuario);
 
-        if($Servico->usado >= $Servico->limite) {
-            $result = [
+        $modulo  = 'BuscaRg';
+        $ver     = Modulos::where('nome', $modulo)
+                ->first();
+
+        $Usuario = Usuario::where('id', $idUser)->first();
+        $Usuario = json_decode($Usuario, true);
+        if($Usuario['tipo'] == 2){
+            //pre pago
+            if($this->verifLimPre($idUser, $Usuario, $modulo)) {
+                            $result = [
                 "servico" => $ver['nome'],
                 "sobre"   => $ver['sobre'],
-                "body"    => "<br/> Seu limite acabou, para adquirir mais entre em contato<br/><br/>",
+                "body"    => "<br/> Saldo insuficiente, realize uma recarga para continuar usando.<br/><br/>",
                 "resultado" => "dados",
                 "status"  => 2
             ];
 
-            return response($result, 200);
+            return response($result, 200);   
+            }
+            $prePago = true;
+        } else {
+
+            //pontos
+            if($this->verifLimPontos($idUser, $Usuario, $modulo)){
+                if($this->verifLimPre($idUser, $Usuario, $modulo)) {
+                                $result = [
+                    "servico" => $ver['nome'],
+                    "sobre"   => $ver['sobre'],
+                    "body"    => "<br/> Saldo insuficiente, realize uma recarga para continuar usando.<br/><br/>",
+                    "resultado" => "dados",
+                    "status"  => 2
+                ];
+
+                return response($result, 200);   
+                }
+                $prePago = true;
+            }else{
+                $prePago = false;
+            }
         }
+
+
+
 
         $url =  base_path(). '/public/tpls/BuscaRg/main.html';
         $res = file_get_contents($url);
@@ -141,11 +242,58 @@ class BuscaRgController extends Controller
         return response($result, 200);
     }
 
-    public function consoltar(Request $request) {
+
+
+
+
+
+
+
+
+    public function consultar(Request $request) {
+
         $idUser  = Util::xss($request->user()->id_usuario);
-        $modulo = 'BuscaRg';
-        $ver = Modulos::where('nome', $modulo)
-            ->first();
+
+        $modulo  = 'BuscaRg';
+        $ver     = Modulos::where('nome', $modulo)
+                ->first();
+
+        $Usuario = Usuario::where('id', $idUser)->first();
+        $Usuario = json_decode($Usuario, true);
+        if($Usuario['tipo'] == 2){
+            //pre pago
+            if($this->verifLimPre($idUser, $Usuario, $modulo)) {
+                            $result = [
+                "servico" => $ver['nome'],
+                "sobre"   => $ver['sobre'],
+                "body"    => "<br/> Saldo insuficiente, realize uma recarga para continuar usando.<br/><br/>",
+                "resultado" => "dados",
+                "status"  => 2
+            ];
+
+            return response($result, 200);   
+            }
+            $prePago = true;
+        } else {
+
+            //pontos
+            if($this->verifLimPontos($idUser, $Usuario, $modulo)){
+                if($this->verifLimPre($idUser, $Usuario, $modulo)) {
+                                $result = [
+                    "servico" => $ver['nome'],
+                    "sobre"   => $ver['sobre'],
+                    "body"    => "<br/> Saldo insuficiente, realize uma recarga para continuar usando.<br/><br/>",
+                    "resultado" => "dados",
+                    "status"  => 2
+                ];
+
+                return response($result, 200);   
+                }
+                $prePago = true;
+            }else{
+                $prePago = false;
+            }
+        }
 
         $servico = 'BuscaRg';
         $Servico = Servico::where('id_usuario', $idUser)
@@ -165,6 +313,8 @@ class BuscaRgController extends Controller
             return response($result, 200);
         }
 
+
+
         $doc     = Util::xss($request->input('doc'));
         $doc = str_replace(array('-', '.', ' '), '', $doc);
         $captcha = Util::xss($request->input('captcha'));
@@ -172,7 +322,7 @@ class BuscaRgController extends Controller
         $auth2   = Util::xss($request->input('auth2'));
 
         $post    = "cpf={$doc}&captcha={$captcha}&cookie={$auth2}&token={$auth1}";
-        $url = 'http://upbusca.com/api/rgx.php';
+        $url = 'http://191.101.18.200/checkRg/api.php';
         $res = Util::curl($url, null, $post, false);
 
         $LogModulo = new LogModulos;            
@@ -247,82 +397,62 @@ class BuscaRgController extends Controller
             // die;
         }
 
-        // try {
-        //     $url = 'http://upbusca.com/api/rgx.php';
-        //     $res = Util::curl($url, null, $post, false);
-            
-        //     if(strlen($res) == 0) {
-        //             $resx = [
-        //                 'error'=> true,
-        //                 'msg'=> 'Sistema indisponivel no momento.'
-        //             ];
-
-        //             $result = [
-        //                     "servico" => $ver['nome'],
-        //                     "sobre"   => $ver['sobre'],
-        //                     "body"    => $resx,
-        //                     "resultado" => "dados",
-        //                     "status"  => $ver['status']
-        //             ];
-        //             return response($result, 200);
-        //     }
-
-        //     if(stristr($res, 'aptcha invalido')) {
-        //         $res = [
-        //             'error'=> true,
-        //             'msg'=> 'captcha invalido!'
-        //         ];
-
-        //         return response($res, 200);
-        //     }
-        //     elseif(stristr($res, 'a existe uma inscric')) {
-        //         $res = [
-        //             'error'=> true,
-        //             'msg'=> 'Ja existe uma inscricao para o cpf!'
-        //         ];
-
-        //         return response($res, 200);            
-        //     }else{
-        //         try {
-        //             $xml  = simplexml_load_string($res);
-
-        //             $json = json_encode(array('dados'=>$xml));                
-        //         } catch(Exception $e) {
-        //             $json = $e;
-        //         }
-        //         return response($json, 200);
-        //     }
-        // } catch(Exception $e) {
-        //     return response(['error'=> $e], 200);
-        // }
     }
+
+
+
 
     public function open(Request $request, $doc)
     {
-        $doc = Util::xss($doc);
-
-        $modulo = 'Upbusca';
-        $ver = Modulos::where('nome', $modulo)
-            ->first();
-
-        $servico = 'Upbusca';
-        $Servico = Servico::where('servico', $servico)
-            ->where('status', 1)
-            ->first();
 
 
-        if($Servico->usado >= $Servico->limite) {
-            $result = [
+
+
+        $idUser  = Util::xss($request->user()->id_usuario);
+
+        $modulo  = 'BuscaRg';
+        $ver     = Modulos::where('nome', $modulo)
+                ->first();
+
+        $Usuario = Usuario::where('id', $idUser)->first();
+        $Usuario = json_decode($Usuario, true);
+        if($Usuario['tipo'] == 2){
+            //pre pago
+            if($this->verifLimPre($idUser, $Usuario, $modulo)) {
+                            $result = [
                 "servico" => $ver['nome'],
                 "sobre"   => $ver['sobre'],
-                "body"    => "<br/> Seu limite acabou, para adquirir mais entre em contato<br/><br/>",
+                "body"    => "<br/> Saldo insuficiente, realize uma recarga para continuar usando.<br/><br/>",
                 "resultado" => "dados",
                 "status"  => 2
             ];
 
-            return response($result, 200);
+            return response($result, 200);   
+            }
+            $prePago = true;
+        } else {
+
+            //pontos
+            if($this->verifLimPontos($idUser, $Usuario, $modulo)){
+                if($this->verifLimPre($idUser, $Usuario, $modulo)) {
+                                $result = [
+                    "servico" => $ver['nome'],
+                    "sobre"   => $ver['sobre'],
+                    "body"    => "<br/> Saldo insuficiente, realize uma recarga para continuar usando.<br/><br/>",
+                    "resultado" => "dados",
+                    "status"  => 2
+                ];
+
+                return response($result, 200);   
+                }
+                $prePago = true;
+            }else{
+                $prePago = false;
+            }
         }
 
+
+        $doc = Util::xss($doc);
         $cookie = $this->logar($ver['payload'], $ver['url']);
 
         $url = $ver['url'] . '/Dados/' . $doc;

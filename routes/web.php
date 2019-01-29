@@ -78,7 +78,7 @@ $router->group(['prefix'=>'Servico'], function($router) {
 
             $router->get('BuscaRg',      'BuscaRgController@main');
             $router->get('BuscaRg/load', 'BuscaRgController@load');
-            $router->post('BuscaRg',     'BuscaRgController@consoltar');
+            $router->post('BuscaRg',     'BuscaRgController@consultar');
 
             $router->get('Original', 'OriginalController@main');
     
