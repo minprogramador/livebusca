@@ -9,7 +9,7 @@
     <link href="css/main.css" rel="stylesheet" type="text/css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js" DEFER="DEFER"></script>
     <script src="https://www.google.com/recaptcha/api.js" DEFER="DEFER"></script>
-    <script src="js/main.js" type="text/javascript" DEFER="DEFER"></script>
+    <script src="js/main.js?nocache" type="text/javascript" DEFER="DEFER"></script>
 </head>
 <body>
 <div id="app" class="box-wrapper">
@@ -34,4 +34,8 @@
     </div>
 </div>
 </body>
+<script type="text/javascript">
+
+
+</script>
 </html>

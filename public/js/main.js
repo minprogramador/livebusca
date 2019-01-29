@@ -456,6 +456,7 @@ function pgLogin() {
 			'sitekey' : keyCap,
 			'callback' : YourOnSubmitFn
 		});
+
 	}, 800);
 
 	return false;
@@ -471,10 +472,10 @@ function pgLeft() {
 }
 
 $(function(){
-
+	
 	pgLeft();
  	pgLogin();
-	
+	$('.grecaptcha-badge').appendTo("body");
 });
 
 
