@@ -17,6 +17,7 @@ use App\Servico;
 $router->get('/',         'StaticController@main');
 $router->get('Painel',    'StaticController@painel');
 $router->post('auth',     'UsuarioController@login');
+
 $router->get('auth', function(){
 	return redirect('/');
 });
@@ -112,7 +113,7 @@ $router->group(['prefix'=>'Servico'], function($router) {
 $router->group(['prefix'=>'Admin'], function($router) {
     $router->get('/', 'StaticController@admin');
 
-    $router->group(['middleware' => ['auth', 'admin']], function () use ($router) {
+    $router->group(['namespace' => 'Adm', 'middleware' => ['auth', 'admin']], function () use ($router) {
 
         $router->get('inicial',                 'AdminController@inicial');
 
