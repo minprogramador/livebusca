@@ -203,18 +203,82 @@ function login(token) {
 }
 
 function recSenha(token) {
-	var usuario 	 = $("#usuario").val();
-	var revendedor = $("#revendedor").val();
-	var senha			 = $("#senha").val();
 
-	var payload = {
-		usuario: usuario,
-		revendedor: revendedor,
-		senha: senha,
-		token: token
-	}
 
-	alert('REC SENHA - fazer submit ! >> '+token);
+
+
+    var usuario      = $("#recUsuario").val();
+    var revendedor = $("#recRevendedor").val();
+
+    var payload = {
+        usuario: usuario,
+        revendedor: revendedor,
+        token: token
+    }
+
+    $.ajax({
+        method : "POST",
+        url : "./recSenha",
+        data : payload,
+        timeout: 8000,
+    })
+        .done(function(res) {
+            //console.log(res);
+            //console.log(res.token);
+            //console.log(res.msg);
+            //console.log(res.error);
+
+            if (res.error == true) {
+
+                if (res.msg) {
+                    var msg = res.msg;
+                } else {
+                    var msg = 'Usuario ou senha invalidos';
+                }
+
+         
+                $('#alertt').show();
+                $('#alertt').addClass('alert-danger');
+                $('#message-alert').html('<strong>Ops!</strong> ' + msg);
+
+            } else {
+
+                if (res.token) {
+//                    console.log('usuario ok, redirecionar para painel.');
+                    $('#alertt').removeClass("alert-danger");
+                    $('#alertt').show();
+                    $('#alertt').addClass('alert alert-success');
+                    $('#message-alert').html('Foi enviado um e-mail para voce.');
+                } else {
+
+                    if (res.msg) {
+                        var msg = res.msg;
+                    } else {
+                        var msg = 'Usuario ou senha invalidos';
+                    }
+
+         
+                    $('#alertt').show();
+                    $('#alertt').addClass('alert-success');
+                    $('#message-alert').html(msg);
+
+                }
+            }
+
+        })
+        .fail(function() {
+         
+            $('#alertt').show();
+            $('#alertt').addClass('alert-warning');
+            $('#message-alert').html('<strong>Ops!</strong> Sistema indisponivel, tente novamente em breve.');
+            console.log('error ao buscar dados, demorou mais de 8s.....');
+
+        });
+
+    console.log('executando ajax...');
+
+
+
 }
 
 function contato(token) {

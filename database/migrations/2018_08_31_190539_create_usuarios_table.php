@@ -24,6 +24,7 @@ class CreateUsuariosTable extends Migration
             $table->decimal('valor', 10, 2)->index();
             $table->integer('tipo');
             $table->integer('tipo_limite');
+            $table->date('data_token')->index();
             $table->integer('status');
 
             $table->index([DB::raw('revendedor(100)')]);
