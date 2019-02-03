@@ -216,13 +216,26 @@ class PainelController extends Controller
 
     public function contato(Request $request) {
 
-
         $frmValidar = [
             'nome'     => 'required|min:3|max:200',
             'email'    => 'required|email|max:255',
             'assunto'  => 'required|min:3|max:255',
             'mensagem' => 'required|min:3|max:10000',
         ];
+
+        $token    = Util::xss($request->input('token'));
+
+        $valCap = Util::validate_rechapcha($token);
+        
+        if($valCap !== true){
+            $res = array(
+                'error' => true,
+                'msg' => 'Erro ao resolver o captcha...'
+            );
+            return response()->json($res, 201);
+            die;
+        }
+        
 
         $this->validate($request, $frmValidar);
         if($request->user() == NULL) {

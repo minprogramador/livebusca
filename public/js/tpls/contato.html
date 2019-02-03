@@ -1,0 +1,57 @@
+<div class="form-group">
+					<h4 class="text-justify">
+						Fale conosco
+						<hr/>  
+					 </h4>
+				 </div>	
+
+				 <form id="frmContato" data-toggle="validator" role="form"  action="javascript:void(0)" method="POST">				 	
+					<div class="form-group">					
+						<div class="input-group">
+							<span class="input-group-addon">
+								<i class="glyphicon glyphicon-user"></i>        
+							</span>
+							<input type="text" class="form-control input" placeholder="Digite seu nome completo" name="conNome" id="conNome" required>
+						</div>
+					</div>
+
+					<div class="form-group">
+						<div class="input-group">
+							<span class="input-group-addon">
+								<i class="glyphicon glyphicon-envelope"></i>        
+							</span>
+							<input type="text" class="form-control input" placeholder="Digite seu e-mail" name="conEmail" id="conEmail" required>
+						</div>
+					</div>
+
+					<div class="form-group">
+						<div class="input-group">
+							<span class="input-group-addon">
+								<i class="glyphicon glyphicon-flash"></i>        
+							</span>
+							<input type="text" class="form-control input" placeholder="Digite seu assunto" name="conAssunto" id="conAssunto" required>
+						</div>
+					</div>
+          
+					<div class="form-group">
+							<textarea class="form-control input" name="ConMensagen" id="conMensagem" rows="4" cols="50" required></textarea>
+					</div>
+          
+          <div class="form-group">
+            <div class="alert fade in" id="alertt">
+              <a href="#" class="close" data-dismiss="alert">&times;</a>
+              <div id="message-alert">
+        
+              </div>
+            </div>
+          </div>
+          
+          <div class="form-group bntesq">
+						<a href="#Login" class="btn btn-link" id="voltarpg">Voltar</a>           
+					</div>
+
+					<div class="form-group bntok">
+						 <div id='recaptchaContato'></div> 
+						<button name="submit" id="submit" type="submit" class="btn btn-primary">Enviar</button>
+					</div>
+				</form>
