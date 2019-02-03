@@ -282,18 +282,57 @@ function recSenha(token) {
 }
 
 function contato(token) {
-	var usuario 	 = $("#usuario").val();
-	var revendedor = $("#revendedor").val();
-	var senha			 = $("#senha").val();
 
-	var payload = {
-		usuario: usuario,
-		revendedor: revendedor,
-		senha: senha,
-		token: token
-	}
 
-	alert('CONTATO - fazer submit ! >> '+token);
+    var nome     = $("#conNome").val();
+    var email    = $("#conEmail").val();
+    var assunto  = $("#conAssunto").val();
+    var mensagem = $("#conMensagem").val();
+
+
+    var payload = {
+        nome: nome,
+        email: email,
+        assunto: assunto,
+        mensagem: mensagem,
+        token: token
+    }
+
+    $.ajax({
+        method : "POST",
+        url : "./Contato",
+        data : payload,
+        timeout: 8000,
+    })
+        .done(function(res) {
+
+            if (res.error == true) {
+
+                if (res.msg) {
+                    var msg = res.msg;
+                } else {
+                    var msg = 'Ocorreu um erro ao enviar a mensagem';
+                }
+
+                alert(msg);
+
+            } else {
+
+                if (res.msg) {
+                    var msg = res.msg;
+                } else {
+                    var msg = 'Ocorreu um erro ao enviar a mensagem';
+                }
+                alert(msg);
+                $("#frmContato")[0].reset();
+            }
+
+        })
+        .fail(function() {
+            alert('Ocorreu um erro ao enviar a mensagem.');
+
+        });
+
 }
 
 function main() {
